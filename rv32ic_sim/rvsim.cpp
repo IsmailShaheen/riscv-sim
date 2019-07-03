@@ -12,6 +12,7 @@ char memory[8 * 1024];	// only 8KB of memory located at address 0
 void emitError(const char *s)
 {
 	cout << s;
+	system("pause"); // Only for debugging
 	exit(0);
 }
 
@@ -37,7 +38,9 @@ void instDecExec(unsigned int instWord)
 	// — inst[31] — inst[30:25] inst[24:21] inst[20]
 	I_imm = ((instWord >> 20) & 0x7FF) | ((instWord >> 31) ? 0xFFFFF800 : 0x0);
 	S_imm = ((instWord >> 07) & 0x01F) | ((instWord >> 20) & 0x7E0) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
-	B_imm = ((instWord >> 07) & 0x01E) | ((instWord >> 20) & 0x7E0) | (((instWord << 04) & 0x800) | (((instWord >> 31) ? 0xFFFFF000 : 0x0)));
+	B_imm = ((instWord >> 07) & 0x01E) | ((instWord >> 20) & 0x7E0) | ((instWord << 04) & 0x800) | ((instWord >> 31) ? 0xFFFFF000 : 0x0);
+	U_imm = ((instWord >> 12) & 0x0007FFFF) | ((instWord >> 31) ? 0xFFF80000 : 0x0);
+	J_imm = ((instWord >> 20) & 0x7FE) | ((instWord >> 9) & 0x800) | (instWord & 0x000FF000) | ((instWord >> 31) ? 0xFFF00000 : 0x0);
 
 	printPrefix(instPC, instWord);
 
@@ -69,17 +72,17 @@ void instDecExec(unsigned int instWord)
 		switch (funct3) {
 		case 0:
 			cout << "\tsb\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
-			memory[regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
+			memory[(unsigned int)regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
 			break;
 		case 1:
 			cout << "\tsh\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
-			memory[regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
-			memory[regs[rs1] + (int)S_imm + 1] = char((regs[rs2] >> 8) & 0x0FF);
+			memory[(unsigned int)regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
+			memory[(unsigned int)regs[rs1] + (int)S_imm + 1] = char((regs[rs2] >> 8) & 0x0FF);
 			break;
 		case 2:
 			cout << "\tsw\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
 			for (int i = 0; i < 4; i++)
-				memory[regs[rs1] + (int)S_imm + i] = char((regs[rs2] >> (i * 8)) & 0x0FF);
+				memory[(unsigned int)regs[rs1] + (int)S_imm + i] = char((regs[rs2] >> (i * 8)) & 0x0FF);
 			break;
 		default:
 			cout << "\tUnkown S Instruction \n";
@@ -88,37 +91,53 @@ void instDecExec(unsigned int instWord)
 	else if (opcode == 0x63) {	// B Instruction
 		switch (funct3) {
 		case 0:
-			cout << "\tbeq\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tbeq\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if (regs[rs1] == regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		case 1:
-			cout << "\tbne\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tbne\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if (regs[rs1] != regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		case 4:
-			cout << "\tblt\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tblt\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if (regs[rs1] < regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		case 5:
-			cout << "\tbge\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tbge\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if (regs[rs1] >= regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		case 6:
-			cout << "\tbltu\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tbltu\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if ((unsigned int)regs[rs1] < (unsigned int)regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		case 7:
-			cout << "\tbgeu\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << (int)B_imm << "\n";
+			cout << "\tbgeu\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 			if ((unsigned int)regs[rs1] >= (unsigned int)regs[rs2]) pc = pc + (int)B_imm - 4;
 			break;
 		default:
 			cout << "\tUnkown B Instruction \n";
 		}
 	}
+	else if (opcode == 0x37 || opcode == 0x17) {	// U instruction
+		switch (opcode) {
+		case 0x37:
+			cout << "\tlui\tx" << rd << hex << ", 0x" << std::setw(8) << (int)U_imm << "\n" << dec;
+			regs[rd] = U_imm << 12;
+			break;
+		case 0x17:
+			cout << "\tauipc\tx" << rd << hex << ", 0x" << std::setw(8) << (int)U_imm << "\n" << dec;
+			regs[rd] = pc + (U_imm << 12);
+			break;
+		}
+	}
+	else if (opcode == 0x6F) {	// J Instruction
+		cout << "\tjal\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)J_imm >> 1) << "\n" << dec;
+		regs[rd] = pc + 4;
+		pc = pc + J_imm - 4;
+	}
 	else {
 		cout << "\tUnkown Instruction \n";
 	}
-
 }
 
 int main(int argc, char *argv[]) {
@@ -151,8 +170,11 @@ int main(int argc, char *argv[]) {
 
 		// dump the registers
 		for (int i = 0; i < 32; i++)
-			cout << "x" << dec << i << ": \t" << "0x" << hex << std::setfill('0') << std::setw(8) << regs[i] << "\n";
+			cout << "x" << dec << i << ": \t" << "0x" << hex << std::setfill('0') << std::setw(8) << regs[i] << "\n" << dec;
 
 	}
 	else emitError("Cannot access input file\n");
+
+	system("pause"); // Only for debugging
+	return 0;
 }
