@@ -72,17 +72,17 @@ void instDecExec(unsigned int instWord)
 		switch (funct3) {
 		case 0:
 			cout << "\tsb\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
-			memory[(unsigned int)regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
+			memory[(unsigned int)(regs[rs1] + (int)S_imm)] = char(regs[rs2] & 0x0FF);
 			break;
 		case 1:
 			cout << "\tsh\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
-			memory[(unsigned int)regs[rs1] + (int)S_imm] = char(regs[rs2] & 0x0FF);
-			memory[(unsigned int)regs[rs1] + (int)S_imm + 1] = char((regs[rs2] >> 8) & 0x0FF);
+			memory[(unsigned int)(regs[rs1] + (int)S_imm)] = char(regs[rs2] & 0x0FF);
+			memory[(unsigned int)(regs[rs1] + (int)S_imm + 1)] = char((regs[rs2] >> 8) & 0x0FF);
 			break;
 		case 2:
 			cout << "\tsw\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
 			for (int i = 0; i < 4; i++)
-				memory[(unsigned int)regs[rs1] + (int)S_imm + i] = char((regs[rs2] >> (i * 8)) & 0x0FF);
+				memory[(unsigned int)(regs[rs1] + (int)S_imm + i)] = char((regs[rs2] >> (i * 8)) & 0x0FF);
 			break;
 		default:
 			cout << "\tUnkown S Instruction \n";
@@ -164,13 +164,16 @@ int main(int argc, char *argv[]) {
 				(((unsigned char)memory[pc + 3]) << 24);
 			pc += 4;
 			// remove the following line once you have a complete simulator
-			if (pc == 512) break;			// stop when PC reached address 32
+			if (pc == 512) break;			// stop when PC reached address 512
 			instDecExec(instWord);
 		}
 
 		// dump the registers
 		for (int i = 0; i < 32; i++)
 			cout << "x" << dec << i << ": \t" << "0x" << hex << std::setfill('0') << std::setw(8) << regs[i] << "\n" << dec;
+		// Only for debugging dump memory
+		/*for (int i = 0; i < 16; i++)
+			cout << "x" << hex << std::setfill('0') << std::setw(8) << i << ": \t" << "0x" << hex << (int)memory[i] << "\n";*/
 
 	}
 	else emitError("Cannot access input file\n");
