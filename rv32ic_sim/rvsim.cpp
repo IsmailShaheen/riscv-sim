@@ -8,6 +8,7 @@ using namespace std;
 int regs[32] = { 0 };
 unsigned int pc = 0x0;
 char memory[8 * 1024];	// only 8KB of memory located at address 0
+bool instFlag; 
 
 void emitError(const char *s)
 {
@@ -26,21 +27,45 @@ void instDecExec(unsigned int instWord)
 	unsigned int I_imm, S_imm, B_imm, U_imm, J_imm;
 	unsigned int address;
 	unsigned int instPC = pc - 4;
+	if (instFlag) //32-bit instruction 
+	{
+		opcode = instWord & 0x0000007F;
+		rd = (instWord >> 7) & 0x0000001F;
+		funct3 = (instWord >> 12) & 0x00000007;
+		rs1 = (instWord >> 15) & 0x0000001F;
+		rs2 = (instWord >> 20) & 0x0000001F;
+		funct7 = (instWord >> 25) & 0x0000007F;
 
-	opcode = instWord & 0x0000007F;
-	rd = (instWord >> 7) & 0x0000001F;
-	funct3 = (instWord >> 12) & 0x00000007;
-	rs1 = (instWord >> 15) & 0x0000001F;
-	rs2 = (instWord >> 20) & 0x0000001F;
-	funct7 = (instWord >> 25) & 0x0000007F;
+		// — inst[31] — inst[30:25] inst[24:21] inst[20]
+		I_imm = ((instWord >> 20) & 0x7FF) | ((instWord >> 31) ? 0xFFFFF800 : 0x0);
+		S_imm = ((instWord >> 07) & 0x01F) | ((instWord >> 20) & 0x7E0) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
+		B_imm = ((instWord >> 07) & 0x01E) | ((instWord >> 20) & 0x7E0) | ((instWord << 04) & 0x800) | ((instWord >> 31) ? 0xFFFFF000 : 0x0);
+		U_imm = ((instWord >> 12) & 0x0007FFFF) | ((instWord >> 31) ? 0xFFF80000 : 0x0);
+		J_imm = ((instWord >> 20) & 0x7FE) | ((instWord >> 9) & 0x800) | (instWord & 0x000FF000) | ((instWord >> 31) ? 0xFFF00000 : 0x0);
 
-	// — inst[31] — inst[30:25] inst[24:21] inst[20]
-	I_imm = ((instWord >> 20) & 0x7FF) | ((instWord >> 31) ? 0xFFFFF800 : 0x0);
-	S_imm = ((instWord >> 07) & 0x01F) | ((instWord >> 20) & 0x7E0) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
-	B_imm = ((instWord >> 07) & 0x01E) | ((instWord >> 20) & 0x7E0) | ((instWord << 04) & 0x800) | ((instWord >> 31) ? 0xFFFFF000 : 0x0);
-	U_imm = ((instWord >> 12) & 0x0007FFFF) | ((instWord >> 31) ? 0xFFF80000 : 0x0);
-	J_imm = ((instWord >> 20) & 0x7FE) | ((instWord >> 9) & 0x800) | (instWord & 0x000FF000) | ((instWord >> 31) ? 0xFFF00000 : 0x0);
+	}
+	else
+	{
+		opcode = instWord & 0x0003;
+		funct3 = (instWord >> 15) & 0x7;
+		switch (opcode)
+		{
+		case 0:
+			if (funct3==2)
+			rd = (instWord >> 2) & 0x0007;
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		default:
+			break;
+		}
+		
 
+	}
+
+	
 	printPrefix(instPC, instWord);
 
 	if (opcode == 0x33) {		// R Instructions
@@ -190,6 +215,11 @@ void instDecExec(unsigned int instWord)
 		}
 
 	}
+	else if (opcode == 0x67) { //jalr instruction 
+		cout << "\tjalr\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+		regs[rd] = pc + 4;
+		pc = regs[rs1] + I_imm;
+	}
 	else if (opcode == 0x23) {	// S Instruction
 		switch (funct3) {
 		case 0:
@@ -280,17 +310,19 @@ int main(int argc, char *argv[]) {
 		if (!inFile.read(memory, fsize)) emitError("Cannot read from input file\n");
 
 		while (true) { //32-bit instructions
-					   //if (((unsigned char)memory[pc] & 0x3)==0x3)
-					   //{
-			instWord = (unsigned char)memory[pc] |
+			if (((unsigned char)memory[pc] & 0x3)==0x3)
+				{
+				instFlag = true; 
+				instWord = (unsigned char)memory[pc] |
 				(((unsigned char)memory[pc + 1]) << 8) |
 				(((unsigned char)memory[pc + 2]) << 16) |
 				(((unsigned char)memory[pc + 3]) << 24);
-			//}
-			/*else //compressed instructions
-			{
-			instWord = (unsigned char)memory[pc] |(((unsigned char)memory[pc + 1]) << 8);
-			}*/
+				}
+			else //compressed instructions
+				{
+				instFlag = false; 
+				instWord = (unsigned char)memory[pc] |(((unsigned char)memory[pc + 1]) << 8);
+				}
 
 			pc += 4;
 			// remove the following line once you have a complete simulator
