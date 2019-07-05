@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include "stdlib.h"
 #include <iomanip>
+//#include "stdlib.h"
 
 using namespace std;
 
@@ -9,10 +9,12 @@ int regs[32] = { 0 };
 unsigned int pc = 0x0;
 char memory[8 * 1024];	// only 8KB of memory located at address 0
 bool instFlag; 
+bool exitFlag = 0;
 
 void emitError(const char *s)
 {
 	cout << s;
+	system("pause"); // Only for debugging
 	exit(0);
 }
 
@@ -213,7 +215,6 @@ void instDecExec(unsigned int instWord)
 		default:
 			cout << "\tUnkown I Instruction \n";
 		}
-
 	}
 	else if (opcode == 0x67) { //jalr instruction 
 		cout << "\tjalr\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
@@ -287,6 +288,41 @@ void instDecExec(unsigned int instWord)
 		regs[rd] = pc + 4;
 		pc = pc + J_imm - 4;
 	}
+	else if (opcode == 0x73) {	// System Instruction
+		if (!I_imm) {
+			cout << "\tecall\n";
+			int j = 0;
+			switch (regs[17]) {
+			case 1:
+				cout << (int)regs[10] << '\n';
+				break;
+			case 4:
+				while (memory[(unsigned int)regs[10] + j] != 0) {
+					cout << (char)memory[(unsigned int)regs[10] + j++];
+				}
+				break;
+			case 5:
+				cin >> regs[10];
+				break;
+			case 8:
+				cin.ignore();
+				do {
+					memory[(unsigned int)regs[10] + j] = getchar();
+					j++;
+				} while (memory[(unsigned int)regs[10] + j - 1] != '\n' && j < regs[11] - 1);
+				memory[(unsigned int)regs[10] + j] = 0;
+				break;
+			case 10:
+				exitFlag = 1;
+				break;
+			default:
+				cout << "\tInvalid system instruction service number\n";
+				break;
+			}
+		}
+		else
+			cout << "\tUnkown System Instruction \n";
+	}
 	else {
 		cout << "\tUnkown Instruction \n";
 	}
@@ -314,6 +350,10 @@ int main(int argc, char *argv[]) {
 				{
 				instFlag = true; 
 				instWord = (unsigned char)memory[pc] |
+					   //if (((unsigned char)memory[pc] & 0x3)==0x3)
+					   //{
+			regs[0] = 0;
+			instWord = (unsigned char)memory[pc] |
 				(((unsigned char)memory[pc + 1]) << 8) |
 				(((unsigned char)memory[pc + 2]) << 16) |
 				(((unsigned char)memory[pc + 3]) << 24);
@@ -325,8 +365,8 @@ int main(int argc, char *argv[]) {
 				}
 
 			pc += 4;
-			// remove the following line once you have a complete simulator
-			if (pc == 512) break;			// stop when PC reached address 32
+			// remove the (pc == 512) part from the following line once you have a complete simulator
+			if (pc == 512 || exitFlag) break;			// stop when PC reached address 512
 			instDecExec(instWord);
 		}
 
