@@ -154,36 +154,36 @@ void instDecExec(unsigned int instWord)
 		}
 	}
 	else if (opcode == 0x3) { //I instructions - Load
-		int address;
+		unsigned int address;
 		switch (funct3) {
 		case 0:
 			cout << "\tlb\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lb instruction
 
-			address = (int)I_imm + regs[rs1];
-			regs[rd] = memory[address] | ((memory[address]) >> 7 ? 0xFFFFFF00 : 0x0);
+			address = I_imm +(unsigned int) regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | ((memory[address]) >> 7 ? 0xFFFFFF00 : 0x0);
 			break;
 		case 1:
 			cout << "\tlh\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lh instruction
-			address = (int)I_imm + regs[rs1];
-			regs[rd] = memory[address] | memory[address + 1] << 8 | ((memory[address + 1]) >> 7 ? 0xFFFF0000 : 0x0);
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8 | ((memory[address + 1]) >> 7 ? 0xFFFF0000 : 0x0);
 			break;
 		case 2:
 			cout << "\tlw\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lw instruction
-			address = (int)I_imm + regs[rs1];
-			regs[rd] = (unsigned char)memory[pc] |
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] |
 				(((unsigned char)memory[address + 1]) << 8) |
 				(((unsigned char)memory[address + 2]) << 16) |
 				(((unsigned char)memory[address + 3]) << 24);
 			break;
 		case 4:
 			cout << "\tlbu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lbu instruction
-			address = (int)I_imm + regs[rs1];
+			address = I_imm + (unsigned int)regs[rs1];
 			regs[rd] = memory[address];
 			break;
 		case 5:
 			cout << "\tlhu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lhu instruction
-			address = (int)I_imm + regs[rs1];
-			regs[rd] = memory[address] | memory[address + 1] << 8;
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8;
 			break;
 		default:
 			cout << "\tUnkown I Instruction \n";
