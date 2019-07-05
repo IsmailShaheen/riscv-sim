@@ -48,22 +48,144 @@ void instDecExec(unsigned int instWord)
 	if (opcode == 0x33) {		// R Instructions
 		switch (funct3) {
 		case 0: if (funct7 == 32) {
-			cout << "\tsub\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			cout << "\tsub\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //Sub instruction 
 			regs[rd] = regs[rs1] - regs[rs2];
 		}
 				else {
-			cout << "\tadd\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-			regs[rd] = regs[rs1] + regs[rs2];
-		}
+					cout << "\tadd\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //Add Instruction 
+					regs[rd] = regs[rs1] + regs[rs2];
+				}
 				break;
+
+		case 1:
+			cout << "\tsll\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //sll instruction 
+			regs[rd] = regs[rs1] << regs[rs2];
+			break;
+		case 2:
+			cout << "\tslt\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //slt instruction 
+			if (regs[rs1] < regs[rs2]) regs[rd] = 1;
+			else regs[rd] = 0;
+			break;
+		case 3:
+			cout << "\tsltu\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //sltu instruction
+			unsigned int r1, r2;
+			r1 = regs[rs1];
+			r2 = regs[rs2];
+			if (r1 < r2) regs[rd] = 1;
+			else regs[rd] = 0;
+			break;
+		case 4:
+			cout << "\txor\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //xor instruction
+			regs[rd] = regs[rs1] ^ regs[rs2];
+			break;
+		case 5:
+			if (funct7 == 32)
+			{
+				cout << "\tsra\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //sra instruction
+				regs[rd] = regs[rs1] >> regs[rs2];
+			}
+			else
+			{
+				cout << "\tsrl\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //srl instruction
+				regs[rd] = regs[rs1] >> regs[rs2];
+			}
+			break;
+		case 6:
+			cout << "\tor\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //or instruction
+			regs[rd] = regs[rs1] | regs[rs2];
+			break;
+		case 7:
+			cout << "\tand\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //and instruction
+			regs[rd] = regs[rs1] & regs[rs2];
+			break;
 		default:
 			cout << "\tUnkown R Instruction \n";
 		}
 	}
 	else if (opcode == 0x13) {	// I instructions
 		switch (funct3) {
-		case 0:	cout << "\taddi\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+		case 0:	cout << "\taddi\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //addi instruction
 			regs[rd] = regs[rs1] + (int)I_imm;
+			break;
+		case 1:
+			cout << "\tslli\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //slli instruction
+			regs[rd] = regs[rs1] << (int)I_imm;
+			break;
+
+		case 2:
+			cout << "\tslti\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //slti instruction
+			if (regs[rs1] < (int)I_imm) regs[rd] = 1;
+			else regs[rd] = 0;
+			break;
+		case 3:
+			cout << "\tsltiu\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //sltiu instruction
+			unsigned int r1;
+			r1 = regs[rs1];
+			if (r1 < I_imm) regs[rd] = 1;
+			else regs[rd] = 0;
+			break;
+		case 4:
+			cout << "\txori\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //xori instruction
+			regs[rd] = regs[rs1] ^ (int)I_imm;
+			break;
+		case 5:
+			if ((int)I_imm >> 5 == 0)
+			{
+				cout << "\tsrli\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //srli instruction
+				regs[rd] =(unsigned int) regs[rs1] >> (I_imm & 0x1F); //unsigned imm
+			}
+			else
+			{
+				cout << "\tsrai\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //srai instruction
+				int shamt;
+				shamt = I_imm & 0x1F; //get the least siginificant 5 bits of the I_imm as the shift value 
+				regs[rd] = regs[rs1] >> shamt;
+
+			}
+			break;
+		case 6:
+			cout << "\tori\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //ori instruction
+			regs[rd] = regs[rs1] | (int)I_imm;
+			break;
+		case 7:
+			cout << "\tandi\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //andi instruction
+			regs[rd] = regs[rs1] & (int)I_imm;
+			break;
+		default:
+			cout << "\tUnkown I Instruction \n";
+		}
+	}
+	else if (opcode == 0x3) { //I instructions - Load
+		unsigned int address;
+		switch (funct3) {
+		case 0:
+			cout << "\tlb\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lb instruction
+
+			address = I_imm +(unsigned int) regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | ((memory[address]) >> 7 ? 0xFFFFFF00 : 0x0);
+			break;
+		case 1:
+			cout << "\tlh\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lh instruction
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8 | ((memory[address + 1]) >> 7 ? 0xFFFF0000 : 0x0);
+			break;
+		case 2:
+			cout << "\tlw\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lw instruction
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] |
+				(((unsigned char)memory[address + 1]) << 8) |
+				(((unsigned char)memory[address + 2]) << 16) |
+				(((unsigned char)memory[address + 3]) << 24);
+			break;
+		case 4:
+			cout << "\tlbu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lbu instruction
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = memory[address];
+			break;
+		case 5:
+			cout << "\tlhu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lhu instruction
+			address = I_imm + (unsigned int)regs[rs1];
+			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8;
 			break;
 		default:
 			cout << "\tUnkown I Instruction \n";
@@ -193,11 +315,19 @@ int main(int argc, char *argv[]) {
 		inFile.seekg(0, inFile.beg);
 		if (!inFile.read(memory, fsize)) emitError("Cannot read from input file\n");
 
-		while (true) {
+		while (true) { //32-bit instructions
+					   //if (((unsigned char)memory[pc] & 0x3)==0x3)
+					   //{
 			instWord = (unsigned char)memory[pc] |
 				(((unsigned char)memory[pc + 1]) << 8) |
 				(((unsigned char)memory[pc + 2]) << 16) |
 				(((unsigned char)memory[pc + 3]) << 24);
+			//}
+			/*else //compressed instructions
+			{
+			instWord = (unsigned char)memory[pc] |(((unsigned char)memory[pc + 1]) << 8);
+			}*/
+
 			pc += 4;
 			// remove the (pc == 512) part from the following line once you have a complete simulator
 			if (pc == 512 || exitFlag) break;			// stop when PC reached address 512
