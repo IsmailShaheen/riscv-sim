@@ -318,6 +318,7 @@ int main(int argc, char *argv[]) {
 		while (true) { //32-bit instructions
 					   //if (((unsigned char)memory[pc] & 0x3)==0x3)
 					   //{
+			regs[0] = 0;
 			instWord = (unsigned char)memory[pc] |
 				(((unsigned char)memory[pc + 1]) << 8) |
 				(((unsigned char)memory[pc + 2]) << 16) |
