@@ -2,7 +2,7 @@
 RV32IC console operated simulator
 
 # DESIGN: 
-The software is supposed to read machine code file (binary file) and decode this code to executable RISCV-32IC instructions. The way it does so is by reading and opening the names of the executable file and the binary file to be decoded from the terminal. The program then checks the first 2 bits to determine whether it is a 32-bit instruction or a compressed instruction, then it reads and encodes the instruction word, print it and execute it. 
+The software is supposed to read machine code file (binary file) and decode this code to executable RISCV-32IC instructions. The way it does so is by reading and opening the names of the executable file and the binary file to be decoded from the terminal. The program then checks the first 2 bits to determine whether it is a 32-bit instruction or a compressed instruction, then it reads, encodes the instruction word, print and execute it. 
 # FUNCTIONS USED: 
 void printPrefix(unsigned int instA, unsigned int instW)
 
