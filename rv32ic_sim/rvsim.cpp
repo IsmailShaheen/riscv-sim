@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-//#include "stdlib.h"
 
 using namespace std;
 
@@ -48,13 +47,11 @@ void instDecExec(unsigned int instWord)
 		rs2 = (instWord >> 20) & 0x0000001F;
 		funct7 = (instWord >> 25) & 0x0000007F;
 
-		// — inst[31] — inst[30:25] inst[24:21] inst[20]
 		I_imm = ((instWord >> 20) & 0x7FF) | ((instWord >> 31) ? 0xFFFFF800 : 0x0);
 		S_imm = ((instWord >> 07) & 0x01F) | ((instWord >> 20) & 0x7E0) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
 		B_imm = ((instWord >> 07) & 0x01E) | ((instWord >> 20) & 0x7E0) | ((instWord << 04) & 0x800) | ((instWord >> 31) ? 0xFFFFF000 : 0x0);
 		U_imm = ((instWord >> 12) & 0x0007FFFF) | ((instWord >> 31) ? 0xFFF80000 : 0x0);
 		J_imm = ((instWord >> 20) & 0x7FE) | ((instWord >> 9) & 0x800) | (instWord & 0x000FF000) | ((instWord >> 31) ? 0xFFF00000 : 0x0);
-
 	}
 	else
 	{
@@ -344,10 +341,7 @@ void instDecExec(unsigned int instWord)
 			break;
 		case 3:
 			cout << "\tsltu\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //sltu instruction
-			unsigned int r1, r2; // TODO: remove unnecessary variables
-			r1 = regs[rs1];
-			r2 = regs[rs2];
-			if (r1 < r2) regs[rd] = 1;
+			if ((unsigned int)regs[rs1] < (unsigned int)regs[rs2]) regs[rd] = 1;
 			else regs[rd] = 0;
 			break;
 		case 4:
@@ -380,51 +374,48 @@ void instDecExec(unsigned int instWord)
 	else if (opcode == 0x13) {	// I instructions
 		switch (funct3) {
 		case 0:
-			cout << "\taddi\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //addi instruction
+			cout << "\taddi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //addi instruction
 			regs[rd] = regs[rs1] + (int)I_imm;
 			break;
 		case 1:
-			cout << "\tslli\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //slli instruction
+			cout << "\tslli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //slli instruction
 			regs[rd] = regs[rs1] << (int)I_imm;
 			break;
 
 		case 2:
-			cout << "\tslti\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //slti instruction
+			cout << "\tslti\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //slti instruction
 			if (regs[rs1] < (int)I_imm) regs[rd] = 1;
 			else regs[rd] = 0;
 			break;
 		case 3:
-			cout << "\tsltiu\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //sltiu instruction
-			unsigned int r1; // TODO: remove unnessary variables
-			r1 = regs[rs1];
-			if (r1 < I_imm) regs[rd] = 1;
+			cout << "\tsltiu\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //sltiu instruction
+			if ((unsigned int)regs[rs1] < I_imm) regs[rd] = 1;
 			else regs[rd] = 0;
 			break;
 		case 4:
-			cout << "\txori\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //xori instruction
+			cout << "\txori\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //xori instruction
 			regs[rd] = regs[rs1] ^ (int)I_imm;
 			break;
 		case 5:
 			if ((int)I_imm >> 5 == 0)
 			{
-				cout << "\tsrli\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //srli instruction
+				cout << "\tsrli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //srli instruction
 				regs[rd] =(unsigned int) regs[rs1] >> (I_imm & 0x1F); //unsigned imm
 			}
 			else
 			{
-				cout << "\tsrai\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //srai instruction
-				int shamt; // TODO: remove unnessary variables
+				cout << "\tsrai\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //srai instruction
+				int shamt;
 				shamt = I_imm & 0x1F; //get the least siginificant 5 bits of the I_imm as the shift value 
 				regs[rd] = regs[rs1] >> shamt;
-
 			}
 			break;
 		case 6:
-			cout << "\tori\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //ori instruction
+			cout << "\tori\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //ori instruction
 			regs[rd] = regs[rs1] | (int)I_imm;
 			break;
 		case 7:
-			cout << "\tandi\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //andi instruction
+			cout << "\tandi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //andi instruction
 			regs[rd] = regs[rs1] & (int)I_imm;
 			break;
 		default:
@@ -433,20 +424,20 @@ void instDecExec(unsigned int instWord)
 		}
 	}
 	else if (opcode == 0x3) { //I instructions - Load
-		unsigned int address; // TODO: remove unnessary variables
-		switch (funct3) { // TODO: make hex with constatnt width
+		unsigned int address;
+		switch (funct3) {
 		case 0:
-			cout << "\tlb\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lb instruction
+			cout << "\tlb\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //lb instruction
 			address = I_imm +(unsigned int) regs[rs1];
 			regs[rd] = (unsigned char)memory[address] | ((memory[address]) >> 7 ? 0xFFFFFF00 : 0x0);
 			break;
 		case 1:
-			cout << "\tlh\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lh instruction
+			cout << "\tlh\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //lh instruction
 			address = I_imm + (unsigned int)regs[rs1];
 			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8 | ((memory[address + 1]) >> 7 ? 0xFFFF0000 : 0x0);
 			break;
 		case 2:
-			cout << "\tlw\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lw instruction
+			cout << "\tlw\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //lw instruction
 			address = I_imm + (unsigned int)regs[rs1];
 			regs[rd] = (unsigned char)memory[address] |
 				(((unsigned char)memory[address + 1]) << 8) |
@@ -454,12 +445,12 @@ void instDecExec(unsigned int instWord)
 				(((unsigned char)memory[address + 3]) << 24);
 			break;
 		case 4:
-			cout << "\tlbu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lbu instruction
+			cout << "\tlbu\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //lbu instruction
 			address = I_imm + (unsigned int)regs[rs1];
 			regs[rd] = memory[address];
 			break;
 		case 5:
-			cout << "\tlhu\tx" << rd << ", " << hex << "0x" << (int)I_imm << "(x" << rs1 << ')' << "\n"; //lhu instruction
+			cout << "\tlhu\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //lhu instruction
 			address = I_imm + (unsigned int)regs[rs1];
 			regs[rd] = (unsigned char)memory[address] | (unsigned char)memory[address + 1] << 8;
 			break;
@@ -469,23 +460,23 @@ void instDecExec(unsigned int instWord)
 		}
 	}
 	else if (opcode == 0x67) { //jalr instruction 
-		cout << "\tjalr\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << std::setw(8) << (int)I_imm << "\n";
+		cout << "\tjalr\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
 		regs[rd] = pc;
 		pc = regs[rs1] + (int)I_imm;
 	}
 	else if (opcode == 0x23) {	// S Instruction
-		switch (funct3) { // TODO: make immediate hex
+		switch (funct3) {
 		case 0:
-			cout << "\tsb\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
+			cout << "\tsb\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
 			memory[(unsigned int)(regs[rs1] + (int)S_imm)] = char(regs[rs2] & 0x0FF);
 			break;
 		case 1:
-			cout << "\tsh\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
+			cout << "\tsh\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
 			memory[(unsigned int)(regs[rs1] + (int)S_imm)] = char(regs[rs2] & 0x0FF);
 			memory[(unsigned int)(regs[rs1] + (int)S_imm + 1)] = char((regs[rs2] >> 8) & 0x0FF);
 			break;
 		case 2:
-			cout << "\tsw\tx" << rs2 << ", " << (int)S_imm << "(x" << rs1 << ")\n";
+			cout << "\tsw\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
 			for (int i = 0; i < 4; i++)
 				memory[(unsigned int)(regs[rs1] + (int)S_imm + i)] = char((regs[rs2] >> (i * 8)) & 0x0FF);
 			break;
@@ -586,7 +577,6 @@ int main(int argc, char *argv[]) {
 
 	unsigned int instWord = 0;
 	ifstream inFile;
-	ofstream outFile;
 
 	if (argc < 2) emitError("use: rv32i_sim <machine_code_file_name>\n");
 
@@ -615,8 +605,7 @@ int main(int argc, char *argv[]) {
 				pc += 2;
 			}
 
-			// remove the (pc == 512) part from the following line once you have a complete simulator
-			if (pc == 512 || exitFlag) break;			// stop when PC reached address 512
+			if (exitFlag) break;			// stop when PC reached address 512
 			instDecExec(instWord);
 		}
 
@@ -626,10 +615,9 @@ int main(int argc, char *argv[]) {
 		// dump memory (only for debugging)
 		/*for (int i = 0; i < 16; i++)
 			cout << "x" << hex << std::setfill('0') << std::setw(8) << i << ": \t" << "0x" << hex << (int)memory[i] << "\n";*/
-
+		inFile.close();
 	}
 	else emitError("Cannot access input file\n");
 
-	system("pause"); // Only for debugging
 	return 0;
 }
