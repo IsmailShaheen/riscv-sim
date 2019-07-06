@@ -49,11 +49,6 @@ void emitError(const char *s)
 
 •	It can’t decode more than one binary file at a time.
 
-# CHALLENGES: 
-
-•	Mapping the compressed instructions to the 32bit instructions 
-
-•	Managing signed and unsigned operations 
 
 
 
