@@ -65,11 +65,12 @@ void instDecExec(unsigned int instWord)
 			I_imm = ((instWord >> 4) & 0x4) | ((instWord >> 7) & 0x38) | ((instWord << 1) & 0x40);
 			if (cfunct3 == 2) { // c.lw Instruction
 				rd = (instWord >> 2) & 0x7;
-				cout << "\tc.lw\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //c.lw instruction
+				cout << "\t\t\t\t\c.lw\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //c.lw instruction
 			}
 			else if (cfunct3 == 6) { // c.sw Instruction
 				rs2 = (instWord >> 2) & 0x7;
-				cout << "\tc.sw\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
+				S_imm = ((instWord >> 4) & 0x4) | ((instWord >> 7) & 0x38) | ((instWord << 1) & 0x40);
+				cout << "\t\t\t\t\c.sw\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
 			}
 			else {
 				cout << "\tUnkown Quadrant 0 Compressed Instruction \n";
@@ -84,14 +85,14 @@ void instDecExec(unsigned int instWord)
 				funct3 = 0;
 				rs1 = rd;
 				I_imm = ((instWord >> 2) & 0x1F) | (((instWord >> 12) & 0x1) ? 0xFFFFFFE0 : 0x0);
-				cout << "\tc.addi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //addi instruction
+				cout << "\t\t\t\t\c.addi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //addi instruction
 
 				break; }
 			case 1: // c.jal Instrcution
 				opcode = 0x6F;
 				rd = 1;
 				J_imm = ((instWord << 3) & 0x20) | ((instWord >> 2) & 0xE) | ((instWord << 1) & 0x80) | ((instWord >> 1) & 0x40) | ((instWord << 2) & 0x400) | ((instWord >> 1) & 0x300) | ((instWord >> 7) & 0x10) | (((instWord >> 12) & 0x1) ? 0xFFFFF800 : 0x0);
-				cout << "\tc.jal\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)J_imm >> 1) << "\n" << dec;
+				cout << "\t\t\t\t\c.jal\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)J_imm >> 1) << "\n" << dec;
 				break;
 			case 2: // c.li Instruction
 				opcode = 0x13;
@@ -103,7 +104,7 @@ void instDecExec(unsigned int instWord)
 				funct3 = 0;
 				rs1 = 0;
 				I_imm = ((instWord >> 2) & 0x1F) | (((instWord >> 12) & 0x1) ? 0xFFFFFFE0 : 0x0);
-				cout << "\tc.li\tx" << rd << ", x" << rs1 << hex << ", 0x" << std::setw(8) << ((int)I_imm >> 1) << "\n" << dec;
+				cout << "\t\t\t\t\c.li\tx" << rd << ", x" << rs1 << hex << ", 0x" << std::setw(8) << ((int)I_imm >> 1) << "\n" << dec;
 				break;
 			case 3:
 				rd = (instWord >> 7) & 0x1F;
@@ -112,7 +113,7 @@ void instDecExec(unsigned int instWord)
 					funct3 = 0;
 					rs1 = rd;
 					I_imm = ((instWord << 3) & 0x20) | ((instWord << 4) & 0x180) | ((instWord << 1) & 0x40) | ((instWord >> 2) & 0x10) | (((instWord >> 12) & 0x1) ? 0xFFFFFE00 : 0x0);
-					cout << "\tc.addi4spn\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
+					cout << "\t\t\t\t\c.addi4spn\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
 				}
 				else if (rd == 0) {
 					cout << "\tHINTs Instruction Detected\n";
@@ -121,7 +122,7 @@ void instDecExec(unsigned int instWord)
 				else { // c.lui Instruction
 					opcode = 0x37;
 					U_imm = ((instWord << 10) & 0x1F000) | (((instWord >> 12) & 0x1) ? 0xFFFE0000 : 0x0);
-					cout << "\tc.lui\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)U_imm >> 1) << "\n" << dec;
+					cout << "\t\t\t\t\c.lui\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)U_imm >> 1) << "\n" << dec;
 				}
 				break;
 			case 4: {
@@ -133,7 +134,7 @@ void instDecExec(unsigned int instWord)
 					funct3 = 5;
 					rs1 = rd;
 					I_imm = ((instWord >> 2) & 0x1F) | ((instWord >> 7) & 0x20);
-					cout << "\tc.srli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.srli instruction
+					cout << "\t\t\t\t\c.srli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.srli instruction
 
 					break;
 				case 1: // c.srai
@@ -142,7 +143,7 @@ void instDecExec(unsigned int instWord)
 					funct3 = 5;
 					rs1 = rd;
 					I_imm = ((instWord >> 2) & 0x1F) | ((instWord >> 7) & 0x20) | 0x40000000;
-					cout << "\tc.srai\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.srai instruction
+					cout << "\t\t\t\t\c.srai\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.srai instruction
 
 					break;
 				case 2: // c.andi
@@ -151,7 +152,7 @@ void instDecExec(unsigned int instWord)
 					funct3 = 7;
 					rs1 = rd;
 					I_imm = ((instWord >> 2) & 0x1F) | (((instWord >> 12) & 0x1) ? 0xFFFFFFE0 : 0x0);
-					cout << "\tc.andi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.andi instruction
+					cout << "\t\t\t\t\c.andi\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.andi instruction
 
 					break;
 				case 3:
@@ -169,22 +170,22 @@ void instDecExec(unsigned int instWord)
 						case 0: // c.sub
 							funct3 = 0;
 							funct7 = 32;
-							cout << "\tc.sub\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.sub instruction
+							cout << "\t\t\t\t\c.sub\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.sub instruction
 							break;
 						case 1: // c.xor
 							funct3 = 4;
 							funct7 = 0;
-							cout << "\tc.xor\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.xor instruction
+							cout << "\t\t\t\t\c.xor\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.xor instruction
 							break;
 						case 2: // c.or
 							funct3 = 6;
 							funct7 = 0;
-							cout << "\tc.or\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.or instruction
+							cout << "\t\t\t\t\c.or\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.or instruction
 							break;
 						case 3: // c.and
 							funct3 = 7;
 							funct7 = 0;
-							cout << "\tc.and\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.and instruction
+							cout << "\t\t\t\t\c.and\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //c.and instruction
 							break;
 						default:
 							cout << "\tUnkown Quadrant 1 Compressed Instruction (cfunct3 = 0x3, cfunct2 = 0x3)\n";
@@ -204,7 +205,7 @@ void instDecExec(unsigned int instWord)
 				opcode = 0x6F;
 				rd = 0;
 				J_imm = ((instWord << 3) & 0x20) | ((instWord >> 2) & 0xE) | ((instWord << 1) & 0x80) | ((instWord >> 1) & 0x40) | ((instWord << 2) & 0x400) | ((instWord >> 1) & 0x300) | ((instWord >> 7) & 0x10) | (((instWord >> 12) & 0x1) ? 0xFFFFF800 : 0x0);
-				cout << "\tc.j\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)J_imm >> 1) << "\n" << dec;
+				cout << "\t\t\t\t\c.j\tx" << rd << hex << ", 0x" << std::setw(8) << ((int)J_imm >> 1) << "\n" << dec;
 				break;
 			case 6: // c.beqz
 				opcode = 0x63;
@@ -212,7 +213,7 @@ void instDecExec(unsigned int instWord)
 				rs1 = ((instWord << 7) & 0x7);
 				rs2 = 0;
 				B_imm = ((instWord << 3) & 0x20) | ((instWord >> 2) & 0x6) | ((instWord << 1) & 0xC0) | ((instWord >> 7) & 0x18) | (((instWord >> 12) & 0x1) ? 0xFFFFFF00 : 0x0);
-				cout << "\tc.beqz\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
+				cout << "\t\t\t\t\c.beqz\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 				break;
 			case 7: // c.bnez
 				opcode = 0x63;
@@ -220,7 +221,7 @@ void instDecExec(unsigned int instWord)
 				rs1 = ((instWord << 7) & 0x7);
 				rs2 = 0;
 				B_imm = ((instWord << 3) & 0x20) | ((instWord >> 2) & 0x6) | ((instWord << 1) & 0xC0) | ((instWord >> 7) & 0x18) | (((instWord >> 12) & 0x1) ? 0xFFFFFF00 : 0x0);
-				cout << "\tc.bnez\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
+				cout << "\t\t\t\t\c.bnez\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << std::setw(8) << ((int)B_imm >> 1) << "\n" << dec;
 				break;
 			default:
 				cout << "\tUnkown Quadrant 1 Compressed Instruction \n";
@@ -244,7 +245,7 @@ void instDecExec(unsigned int instWord)
 					cout << "\tReserved Instruction Detected\n";
 					return;
 				}
-				cout << "\tc.slli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.slli instruction
+				cout << "\t\t\t\t\c.slli\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec; //c.slli instruction
 				break;
 			case 1:
 				cout << "\tUnkown Quadrant 2 Compressed Instruction \n";
@@ -260,7 +261,7 @@ void instDecExec(unsigned int instWord)
 					cout << "\tReserved Instruction Detected\n";
 					return;
 				}
-				cout << "\tc.lwsp\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //c.lwsp instruction
+				cout << "\t\t\t\t\c.lwsp\tx" << rd << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "(x" << dec << rs1 << ')' << "\n"; //c.lwsp instruction
 
 				break;
 			case 3:
@@ -279,7 +280,7 @@ void instDecExec(unsigned int instWord)
 						opcode = 0x67;
 						rd = 1;
 						I_imm = 0;
-						cout << "\tc.jalr\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
+						cout << "\t\t\t\t\c.jalr\tx" << rd << ", x" << rs1 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
 
 					}
 					else { // c.add
@@ -287,7 +288,7 @@ void instDecExec(unsigned int instWord)
 						funct3 = 0;
 						funct7 = 0;
 						rd = rs1;
-						cout << "\tc.add\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+						cout << "\t\t\t\t\c.add\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
 					}
 				}
 				else {
@@ -296,7 +297,7 @@ void instDecExec(unsigned int instWord)
 						rs1 = ((instWord >> 7) & 0x1F);
 						rd = 0;
 						I_imm = 0;
-						cout << "\tc.jr\tx" << rd << ", x" << rs1 << ", x" << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
+						cout << "\t\t\t\t\c.jr\tx" << rd << ", x" << rs1 << ", x" << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)I_imm << "\n" << dec;
 						/*if (rs1 == 0) {
 							cout << "\tReserved Instruction Detected\n";
 							return;
@@ -312,7 +313,7 @@ void instDecExec(unsigned int instWord)
 							cout << "\tHINTs Instruction Detected\n";
 							return;
 						}
-						cout << "\tc.mv\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+						cout << "\t\t\t\t\c.mv\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
 					}
 				}
 				break;
@@ -326,7 +327,7 @@ void instDecExec(unsigned int instWord)
 				rs1 = 2;
 				rs2 = ((instWord >> 2) & 0x1F);
 				S_imm = ((instWord >> 1) & 0xC0) | ((instWord >> 7) & 0x3C);
-				cout << "\tc.swsp\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
+				cout << "\t\t\t\t\c.swsp\tx" << rs2 << ", 0x" << hex << std::setfill('0') << std::setw(8) << (int)S_imm << "(x" << rs1 << ")\n";
 
 				break;
 			case 7:
